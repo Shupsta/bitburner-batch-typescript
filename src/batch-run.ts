@@ -37,10 +37,10 @@ export async function main(ns: NS): Promise<void> {
     //debugger;
 
     for(let i = 1; i < 5; i++){
-        ExecThreads(ns, "batch-weaken.js", hackWeakenThreads, [target, weake_delay_1 * i + ((5 * bufferTime) * i)]);
-        ExecThreads(ns, "batch-weaken.js", growWeakenThreads, [target, weake_delay_2 * i + ((5 * bufferTime) * i)]);
-        ExecThreads(ns, "batch-grow.js", growThreads, [target, grow_delay * i + ((5 * bufferTime) * i)]);
-        ExecThreads(ns, "batch-hack.js", hackThreads, [target, hack_delay * i + ((5 * bufferTime) * i)]);
+        ExecThreads(ns, "batch-weaken.js", hackWeakenThreads, [target, weake_delay_1 * i]);
+        ExecThreads(ns, "batch-weaken.js", growWeakenThreads, [target, weake_delay_2 * i]);
+        ExecThreads(ns, "batch-grow.js", growThreads, [target, grow_delay * i]);
+        ExecThreads(ns, "batch-hack.js", hackThreads, [target, hack_delay * i]);
         //ns.exec("batch-weaken.js", target, hackWeakenThreads, target, weake_delay_1 * i);
         //ns.exec("batch-weaken.js", target, growWeakenThreads, target, weake_delay_2 * i);
         //ns.exec("batch-grow.js", target, growThreads, target,grow_delay * i);
