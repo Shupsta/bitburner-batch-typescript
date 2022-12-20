@@ -20,36 +20,29 @@ export async function main(ns: NS): Promise<void> {
     const weakenTime = ns.getWeakenTime(target);
     let bufferTime = ns.args[1] as number;
     if (bufferTime == undefined) bufferTime = 300;
-    const res = GetInfo(hackTime, growTime, weakenTime, bufferTime);
-    const depth = res.depth as number;
-    const period = res.period as number;
 
     const hackThreads = ns.args[2] != undefined ? ns.args[2] as number: 11;
     const hackWeakenThreads = ns.args[3] != undefined ? ns.args[3] as number : 1;
     const growThreads = ns.args[4] != undefined ? ns.args[4] as number : 48;
     const growWeakenThreads = ns.args[5] != undefined ? ns.args[5] as number : 5;
 
-    const hack_delay = depth * period - 4 * bufferTime - hackTime;
-    const weake_delay_1 = depth * period - 3 * bufferTime - weakenTime;
-    const grow_delay = depth * period - 2 * bufferTime - growTime;
-    const weake_delay_2 = depth * period - 1 * bufferTime - weakenTime;
+    debugger;
 
-    //debugger;
+    const hack_delay = (weakenTime - bufferTime) - hackTime;
+    const grow_delay = (weakenTime + bufferTime) - growTime;
+    const weake_delay_2 = (weakenTime + (2 * bufferTime)) - weakenTime;
 
-    for(let i = 1; i < 5; i++){
-        ExecThreads(ns, "batch-weaken.js", hackWeakenThreads, [target, weake_delay_1 * i + ((5 * bufferTime) * i)]);
-        ExecThreads(ns, "batch-weaken.js", growWeakenThreads, [target, weake_delay_2 * i + ((5 * bufferTime) * i)]);
-        ExecThreads(ns, "batch-grow.js", growThreads, [target, grow_delay * i + ((5 * bufferTime) * i)]);
-        ExecThreads(ns, "batch-hack.js", hackThreads, [target, hack_delay * i + ((5 * bufferTime) * i)]);
+    for(let i = 0; i < 5; i++){
+        ExecThreads(ns, "batch-weaken.js", hackWeakenThreads, [target, (5 * bufferTime)* i]);
+        ExecThreads(ns, "batch-weaken.js", growWeakenThreads, [target, weake_delay_2 * i]);
+        ExecThreads(ns, "batch-grow.js", growThreads, [target, grow_delay * i]);
+        ExecThreads(ns, "batch-hack.js", hackThreads, [target, hack_delay * i]);
         //ns.exec("batch-weaken.js", target, hackWeakenThreads, target, weake_delay_1 * i);
         //ns.exec("batch-weaken.js", target, growWeakenThreads, target, weake_delay_2 * i);
         //ns.exec("batch-grow.js", target, growThreads, target,grow_delay * i);
         //ns.exec("batch-hack.js", target, hackThreads, target, hack_delay * i);
-        //another test
+        
     }
-
-    ns.tprintf("\nDepth | %d", depth);
-    ns.tprintf("\nPeriod | %d", period);   
     
 
     ns.tprintf("\nHack Threads | %d", hackThreads);
@@ -60,50 +53,7 @@ export async function main(ns: NS): Promise<void> {
     ns.tprintf("\nHack Time | %d", hackTime);
     ns.tprintf("\nWeaken H Time | %d", weakenTime);
     ns.tprintf("\nGrow Time | %d", growTime);
-    ns.tprintf("\nWeaken G Time | %d", weakenTime);
-
-    ns.tprintf("\nHack Delay | %d", hack_delay);
-    ns.tprintf("\nWeaken H Delay | %d", weake_delay_1);
-    ns.tprintf("\nGrow Delay | %d", grow_delay);
-    ns.tprintf("\nWeaken G Delay | %d", weake_delay_2);   
-
-
-    function GetInfo(hackTime: number, growTime: number, weakenTime: number, bufferTime: number): { period: number | undefined, depth: number | undefined} {
-
-        let period, depth;
-        const kW_max = Math.floor(1 + (weakenTime - 4 * bufferTime) / (8 * bufferTime));
-        schedule: for (let kW = kW_max; kW >= 1; --kW) {
-            const t_min_W = (weakenTime + 4 * bufferTime) / kW;
-            const t_max_W = (weakenTime - 4 * bufferTime) / (kW - 1);
-
-            const kG_min = Math.ceil(Math.max((kW - 1) * 0.8, 1));
-            const kG_max = Math.floor(1 + kW * 0.8);
-
-            for (let kG = kG_max; kG >= kG_min; --kG) {
-                const t_min_G = (growTime + 3 * bufferTime) / kG;
-                const t_max_G = (growTime - 3 * bufferTime) / (kG - 1);
-
-                const kH_min = Math.ceil(Math.max((kW - 1) * 0.25, (kG - 1) * 0.3125, 1));
-                const kH_max = Math.floor(Math.min(1 + kW * 0.25, 1 + kG * 0.3125));
-
-                for (let kH = kH_max; kH >= kH_min; --kH) {
-                    const t_min_H = (hackTime + 5 * bufferTime) / kH;
-                    const t_max_H = (hackTime - 1 * bufferTime) / (kH - 1);
-
-                    const t_min = Math.max(t_min_H, t_min_G, t_min_W);
-                    const t_max = Math.min(t_max_H, t_max_G, t_max_W);
-
-                    if (t_min <= t_max) {
-                        period = t_min;
-                        depth = kW;
-                        break schedule;
-                    }
-                }
-            }
-        }
-
-        return {period: period, depth: depth};
-    }
+    ns.tprintf("\nWeaken G Time | %d", weakenTime);    
 
 }
 
